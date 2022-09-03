@@ -181,5 +181,29 @@ class music(commands.Cog):
 		except Exception as e:
 			print(e)
 			await ctx.send(f"Error while trying to get the queue. {e}")
+
+	@commands.command(aliases=[])
+	async def clear(self, ctx):
+		self.song_queue.clear()
+		await ctx.send("Queue cleared.")
+
+	@commands.command()
+	async def ratio(self, ctx):
+		# React to the command with a thumbs up
+		try:
+			await ctx.message.add_reaction("🇷")
+			await ctx.message.add_reaction("🇦")
+			await ctx.message.add_reaction("🇹")
+			await ctx.message.add_reaction("🇮")
+			await ctx.message.add_reaction("🇴")
+			await ctx.message.add_reaction("▫️")
+			await ctx.message.add_reaction("🇫")
+			await ctx.message.add_reaction("🇩")
+			await ctx.message.add_reaction("🇵")
+		except Exception as e:
+			print(e)
+			await ctx.send(f"Error while trying to react to the command. {e}")
+
+
 async def setup(bot):
 	await bot.add_cog(music(bot))
