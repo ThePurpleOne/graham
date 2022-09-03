@@ -14,6 +14,7 @@ class music(commands.Cog):
 
 		self.is_playing = False
 		self.is_paused = False
+		self.current = None
 		self.vc = None
 		self.song_queue = []
 
@@ -28,16 +29,16 @@ class music(commands.Cog):
 	def play_next(self):
 		if len(self.song_queue) > 0:
 			self.is_playing = True
-			current = self.song_queue[0][0]['source']
+			self.current = self.song_queue[0][0]
 			self.song_queue.pop(0)
-			self.vc.play(discord.FFmpegPCMAudio(current, **self.FFMPEG_OPTIONS), after=lambda e: self.play_next())
+			self.vc.play(discord.FFmpegPCMAudio(self.current['source'], **self.FFMPEG_OPTIONS), after=lambda e: self.play_next())
 		else:
 			self.is_playing = False
 
 	async def play_song(self, ctx):
 		if len(self.song_queue) > 0:
 			self.is_playing = True
-			current = self.song_queue[0][0]['source']
+			self.current = self.song_queue[0][0]
 
 			# Connect the the requested voice channel
 			if self.vc == None or not self.vc.is_connected():
@@ -50,9 +51,10 @@ class music(commands.Cog):
 
 			await ctx.send(f"🎵 Playing : {self.song_queue[0][0]['title']}")
 			self.song_queue.pop(0)
-			self.vc.play(discord.FFmpegPCMAudio(current, **self.FFMPEG_OPTIONS), after=lambda e: self.play_next())
+			self.vc.play(discord.FFmpegPCMAudio(self.current['source'], **self.FFMPEG_OPTIONS), after=lambda e: self.play_next())
 		else:
 			self.is_playing = False
+			self.current = None
 
 	@commands.command(aliases = ['p', 'pl', 'pla', 'plya', 'lypa'])	
 	async def play(self, ctx, *args):
@@ -73,7 +75,7 @@ class music(commands.Cog):
 				try:
 					if self.is_playing:
 						try:
-							embed = discord.Embed(	title="Request Added to the Queue", 
+							embed = discord.Embed(	title="Request Added to the Queue!", 
 													description=f"{song['title']}", 
 													color=discord.Color.purple())
 							embed.add_field(name="Requested by", value=f"{ctx.author.mention}", inline=True)
@@ -97,7 +99,7 @@ class music(commands.Cog):
 		if ctx.voice_client is None: 
 			await ctx.author.voice.channel.connect()
 			
-	@commands.command(aliases=['fuckoff','gtfo', 'leave', 'quit'])
+	@commands.command(aliases=['fuckoff','gtfo', 'leave', 'quit', 'd'])
 	async def disconnect(self, ctx):
 		try:
 			await ctx.voice_client.disconnect()
@@ -110,6 +112,7 @@ class music(commands.Cog):
 		if self.is_playing:
 			self.vc.pause()
 			self.is_paused = True
+			self.is_playing = False
 			await ctx.send("⏸️ Paused")
 		elif self.is_paused:
 			self.vc.resume()
@@ -120,12 +123,14 @@ class music(commands.Cog):
 
 	@commands.command(aliases=['r'])
 	async def resume(self, ctx):
-		if self.is_paused:
+		if self.is_paused and not self.is_playing:
 			self.vc.resume()
 			self.is_paused = False
 			await ctx.send("▶️ Resumed")
-		else:
+		elif not self.is_paused:
 			await ctx.send("🎧 Music is already playing.")
+		elif not self.is_playing:
+			await ctx.send("🔇 Nothing is playing.")
 
 	@commands.command(aliases=['s'])
 	async def stop(self, ctx):
@@ -138,17 +143,18 @@ class music(commands.Cog):
 			self.vc.stop()
 			await ctx.send("⏩ Skipped")
 
-	#@commands.command(aliases=['np', 'current', 'currentsong', 'playing'])
-	#async def info(self, ctx):
-	#	try:
-	#		embed = discord.Embed(title="Now playing", description=f"{ctx.voice_client.source.title}", color=ctx.author.color)
-	#		embed.add_field(name="Requested by", value=ctx.author.mention)
-	#		embed.add_field(name="Duration", value=f"{ctx.voice_client.source.duration} seconds")
-	#		embed.set_thumbnail(url=ctx.author.avatar_url)
-	#		await ctx.send(embed=embed)
-	#	except Exception as e:
-	#		print(e)
-	#		await ctx.send(f"Error while trying to get the current song. {e}")
+	@commands.command(aliases=['np', 'current', 'currentsong', 'playing'])
+	async def info(self, ctx):
+		try:
+			embed = discord.Embed(title="Now playing", description=f"{self.current['title']}", color=discord.Color.purple(), url=f"{self.current['webpage_url']}")
+			embed.add_field(name="Requested by", value=ctx.author.mention)
+			embed.add_field(name="Duration", value=f"{self.current['duration']} seconds")
+
+			embed.set_thumbnail(url=self.current['thumbnail'])
+			await ctx.send(embed=embed)
+		except Exception as e:
+			print(e)
+			await ctx.send(f"Error while trying to get the current song. {e}")
 
 async def setup(bot):
 	await bot.add_cog(music(bot))
