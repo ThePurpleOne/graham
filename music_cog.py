@@ -146,8 +146,12 @@ class music(commands.Cog):
 	@commands.command(aliases=['np', 'current', 'currentsong', 'playing'])
 	async def info(self, ctx):
 		try:
-			embed = discord.Embed(title="Now playing", description=f"{self.current['title']}", color=discord.Color.purple(), url=f"{self.current['webpage_url']}")
-			embed.add_field(name="Requested by", value=ctx.author.mention)
+			embed = discord.Embed(	title="Now playing", 
+									description=f"{self.current['title']}", 
+									color=discord.Color.red(), 
+									url=f"{self.current['webpage_url']}")
+			embed.add_field(name="Requested by", 
+							value=ctx.author.mention)
 			embed.add_field(name="Duration", value=f"{self.current['duration']} seconds")
 
 			embed.set_thumbnail(url=self.current['thumbnail'])
@@ -156,5 +160,26 @@ class music(commands.Cog):
 			print(e)
 			await ctx.send(f"Error while trying to get the current song. {e}")
 
+	@commands.command(aliases=['qu',])
+	async def queue(self, ctx):
+		try:
+			embed = discord.Embed(	title="Music Queue",
+									color=discord.Color.green(),
+			)
+			
+			# Add the current
+			embed.add_field(name=f"0 - in the Queue *NOW PLAYING*", value=f"{self.current['title']}", inline=True)
+			embed.add_field(name=f"Duraction", value=f"{self.current['duration']} seconds", inline=True)
+			embed.add_field(name=f"{chr(173)}", value=f"----------", inline=False)
+
+			for i, item in enumerate(self.song_queue):
+				embed.add_field(name=f"{i + 1}  - in the Queue", value=f"{item[0]['title']}", inline=True)
+				embed.add_field(name=f"Duraction", value=f"{item[0]['duration']} seconds", inline=True)
+				embed.add_field(name=f"{chr(173)}", value=f"----------", inline=False)
+
+			await ctx.send(embed=embed)
+		except Exception as e:
+			print(e)
+			await ctx.send(f"Error while trying to get the queue. {e}")
 async def setup(bot):
 	await bot.add_cog(music(bot))
