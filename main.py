@@ -27,6 +27,7 @@ if __name__ == "__main__":
 
 	# CREATE THE ACTUAL BOT
 	bot = commands.Bot(command_prefix=prefix, owner_id=owner, intents=discord.Intents.all())
+	bot.remove_command('skip')
 
 	# RUN THE BOT
 	asyncio.run(main())
