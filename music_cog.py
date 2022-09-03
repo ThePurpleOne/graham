@@ -163,19 +163,19 @@ class music(commands.Cog):
 	@commands.command(aliases=['qu',])
 	async def queue(self, ctx):
 		try:
-			embed = discord.Embed(	title="Music Queue",
+			embed = discord.Embed(	title="---------- Music Queue ----------",
 									color=discord.Color.green(),
 			)
 			
 			# Add the current
-			embed.add_field(name=f"0 - in the Queue *NOW PLAYING*", value=f"{self.current['title']}", inline=True)
+			embed.add_field(name=f"Place in the Queue - 0 *NOW PLAYING*", value=f"{self.current['title']}", inline=True)
 			embed.add_field(name=f"Duraction", value=f"{self.current['duration']} seconds", inline=True)
-			embed.add_field(name=f"{chr(173)}", value=f"----------", inline=False)
+			embed.add_field(name=f"{chr(173)}", value=f"--------------------", inline=False)
 
 			for i, item in enumerate(self.song_queue):
-				embed.add_field(name=f"{i + 1}  - in the Queue", value=f"{item[0]['title']}", inline=True)
+				embed.add_field(name=f"Place in the Queue - {i + 1} ", value=f"{item[0]['title']}", inline=True)
 				embed.add_field(name=f"Duraction", value=f"{item[0]['duration']} seconds", inline=True)
-				embed.add_field(name=f"{chr(173)}", value=f"----------", inline=False)
+				embed.add_field(name=f"{chr(173)}", value=f"--------------------", inline=False)
 
 			await ctx.send(embed=embed)
 		except Exception as e:
