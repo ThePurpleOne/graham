@@ -23,7 +23,7 @@ class music(commands.Cog):
 				get_info = ydl.extract_info(f"ytsearch:{query}", download=False)['entries'][0]
 			except Exception:
 				return False
-		return {'source': get_info['formats'][0]['url'], 'title': get_info['title']}
+		return {'source': get_info['formats'][0]['url'], 'title': get_info['title'], 'duration': get_info['duration'], 'thumbnail': get_info['thumbnail'], 'webpage_url': get_info['webpage_url']}
 
 	def play_next(self):
 		if len(self.song_queue) > 0:
@@ -72,7 +72,16 @@ class music(commands.Cog):
 			else:
 				try:
 					if self.is_playing:
-						await ctx.send(f"🏳️‍🌈 Added {song['title']} to the queue")
+						try:
+							embed = discord.Embed(	title="Request Added to the Queue", 
+													description=f"{song['title']}", 
+													color=discord.Color.purple())
+							embed.add_field(name="Requested by", value=f"{ctx.author.mention}", inline=True)
+							embed.add_field(name="Duration", value=f"{song['duration']} seconds")
+							embed.set_thumbnail(url=song['thumbnail'])
+							await ctx.send(embed=embed)
+						except Exception as e:
+							print(e)
 				except Exception as e:
 					print(e)
 
@@ -96,7 +105,7 @@ class music(commands.Cog):
 				print(e)
 				await ctx.send(f"Error while trying to disconnect. {e}")
 
-	@commands.command()
+	@commands.command(aliases=['pa'])
 	async def pause(self, ctx):
 		if self.is_playing:
 			self.vc.pause()
@@ -109,7 +118,7 @@ class music(commands.Cog):
 		else:
 			await ctx.send("🔇 Nothing is playing.")
 
-	@commands.command()
+	@commands.command(aliases=['r'])
 	async def resume(self, ctx):
 		if self.is_paused:
 			self.vc.resume()
@@ -118,12 +127,12 @@ class music(commands.Cog):
 		else:
 			await ctx.send("🎧 Music is already playing.")
 
-	@commands.command()
+	@commands.command(aliases=['s'])
 	async def stop(self, ctx):
 		await ctx.voice_client.stop()
 		await ctx.send("Music stopped.")
 
-	@commands.command(aliases=['next', 'spik', 'skip', 'fs', 'forceskip', 's'])
+	@commands.command(aliases=['next', 'spik', 'skip', 'fs', 'forceskip',])
 	async def skipp(self, ctx):
 		if self.vc != None and self.vc:
 			self.vc.stop()
@@ -140,7 +149,6 @@ class music(commands.Cog):
 	#	except Exception as e:
 	#		print(e)
 	#		await ctx.send(f"Error while trying to get the current song. {e}")
-
 
 async def setup(bot):
 	await bot.add_cog(music(bot))
